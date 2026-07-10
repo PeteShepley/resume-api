@@ -1,0 +1,17 @@
+[project]
+name = "resume-api"
+version = "0.1.0"
+description = "Resume/CV data API — Python on AWS Lambda, DynamoDB, API Gateway, Clerk auth"
+requires-python = ">=3.12"
+
+# Dependencies are tracked in requirements.txt (bundled into the Lambda zip)
+# and requirements-dev.txt (local/CI tooling) — not here. This project isn't
+# built or installed as a package; Lambda just needs src/resume_api/ on the
+# path, and pytest gets there via pythonpath below.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
