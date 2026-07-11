@@ -23,8 +23,10 @@ info:
     url: https://github.com/PeteShepley/resume-api
 
 servers:
+  - url: https://resume.api.peteshepley.com
+    description: Production
   - url: https://cb1nkp4qvk.execute-api.us-east-1.amazonaws.com
-    description: Production (no custom domain yet)
+    description: Production (default API Gateway invoke URL, no custom domain)
 
 security:
   - clerkAuth: []
