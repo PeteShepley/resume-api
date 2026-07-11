@@ -1,0 +1,996 @@
+openapi: 3.0.3
+info:
+  title: Resume API
+  version: "1.0.0"
+  description: |
+    An API for a person's resume-shaped data — profile, work experience,
+    education, skills, certifications, hobbies, and goals — served back as
+    JSON or Markdown.
+
+    Every route is scoped to the caller's own identity: there is no person
+    ID anywhere in a URL or request body. The caller's Clerk user is derived
+    from the verified JWT on every request, so `/me/...` always means
+    "the signed-in user," never anyone else's data.
+
+    Authenticate with a Clerk session token, issued against the `resume-api`
+    JWT template (audience `https://api.peteshepley.com`), sent as
+    `Authorization: Bearer <token>`.
+  contact:
+    name: Pete Shepley
+    url: https://peteshepley.com
+  license:
+    name: Source
+    url: https://github.com/PeteShepley/resume-api
+
+servers:
+  - url: https://cb1nkp4qvk.execute-api.us-east-1.amazonaws.com
+    description: Production (no custom domain yet)
+
+security:
+  - clerkAuth: []
+
+tags:
+  - name: Profile
+    description: Singleton profile — one per person.
+  - name: Experience
+    description: Work experience, sorted most-recent-first.
+  - name: Education
+    description: Education history, sorted most-recent-first.
+  - name: Skills
+    description: Skills, in insertion order.
+  - name: Certifications
+    description: Certifications, in insertion order.
+  - name: Hobbies
+    description: Hobbies, in insertion order.
+  - name: Goals
+    description: Career/personal/learning goals, in insertion order.
+  - name: Resume
+    description: The whole resume assembled in one call.
+
+paths:
+  /me/profile:
+    get:
+      operationId: getProfile
+      tags: [Profile]
+      summary: Get the caller's profile
+      description: 404 until the first `PUT /me/profile`.
+      responses:
+        "200":
+          description: The caller's profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: putProfile
+      tags: [Profile]
+      summary: Create or replace the caller's profile
+      description: Upsert — always succeeds, no 404.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: The profile as stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/experience:
+    get:
+      operationId: listExperience
+      tags: [Experience]
+      summary: List experience entries (most recent first)
+      responses:
+        "200":
+          description: Experience entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Experience"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createExperience
+      tags: [Experience]
+      summary: Create an experience entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExperienceInput"
+      responses:
+        "201":
+          description: The created experience entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/experience/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getExperience
+      tags: [Experience]
+      summary: Get one experience entry
+      responses:
+        "200":
+          description: The experience entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateExperience
+      tags: [Experience]
+      summary: Replace one experience entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExperienceInput"
+      responses:
+        "200":
+          description: The updated experience entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteExperience
+      tags: [Experience]
+      summary: Delete one experience entry
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/education:
+    get:
+      operationId: listEducation
+      tags: [Education]
+      summary: List education entries (most recent first)
+      responses:
+        "200":
+          description: Education entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Education"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createEducation
+      tags: [Education]
+      summary: Create an education entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EducationInput"
+      responses:
+        "201":
+          description: The created education entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Education"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/education/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getEducation
+      tags: [Education]
+      summary: Get one education entry
+      responses:
+        "200":
+          description: The education entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Education"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateEducation
+      tags: [Education]
+      summary: Replace one education entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EducationInput"
+      responses:
+        "200":
+          description: The updated education entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Education"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteEducation
+      tags: [Education]
+      summary: Delete one education entry
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/skills:
+    get:
+      operationId: listSkills
+      tags: [Skills]
+      summary: List skills (insertion order)
+      responses:
+        "200":
+          description: Skills.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Skill"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createSkill
+      tags: [Skills]
+      summary: Create a skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillInput"
+      responses:
+        "201":
+          description: The created skill.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Skill"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/skills/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getSkill
+      tags: [Skills]
+      summary: Get one skill
+      responses:
+        "200":
+          description: The skill.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Skill"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateSkill
+      tags: [Skills]
+      summary: Replace one skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillInput"
+      responses:
+        "200":
+          description: The updated skill.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Skill"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteSkill
+      tags: [Skills]
+      summary: Delete one skill
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/certifications:
+    get:
+      operationId: listCertifications
+      tags: [Certifications]
+      summary: List certifications (insertion order)
+      responses:
+        "200":
+          description: Certifications.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Certification"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createCertification
+      tags: [Certifications]
+      summary: Create a certification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationInput"
+      responses:
+        "201":
+          description: The created certification.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/certifications/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getCertification
+      tags: [Certifications]
+      summary: Get one certification
+      responses:
+        "200":
+          description: The certification.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Certification"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateCertification
+      tags: [Certifications]
+      summary: Replace one certification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationInput"
+      responses:
+        "200":
+          description: The updated certification.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteCertification
+      tags: [Certifications]
+      summary: Delete one certification
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/hobbies:
+    get:
+      operationId: listHobbies
+      tags: [Hobbies]
+      summary: List hobbies (insertion order)
+      responses:
+        "200":
+          description: Hobbies.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Hobby"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createHobby
+      tags: [Hobbies]
+      summary: Create a hobby
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HobbyInput"
+      responses:
+        "201":
+          description: The created hobby.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hobby"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/hobbies/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getHobby
+      tags: [Hobbies]
+      summary: Get one hobby
+      responses:
+        "200":
+          description: The hobby.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hobby"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateHobby
+      tags: [Hobbies]
+      summary: Replace one hobby
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HobbyInput"
+      responses:
+        "200":
+          description: The updated hobby.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hobby"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteHobby
+      tags: [Hobbies]
+      summary: Delete one hobby
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/goals:
+    get:
+      operationId: listGoals
+      tags: [Goals]
+      summary: List goals (insertion order)
+      responses:
+        "200":
+          description: Goals.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Goal"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createGoal
+      tags: [Goals]
+      summary: Create a goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalInput"
+      responses:
+        "201":
+          description: The created goal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/goals/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getGoal
+      tags: [Goals]
+      summary: Get one goal
+      responses:
+        "200":
+          description: The goal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateGoal
+      tags: [Goals]
+      summary: Replace one goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalInput"
+      responses:
+        "200":
+          description: The updated goal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteGoal
+      tags: [Goals]
+      summary: Delete one goal
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/resume:
+    get:
+      operationId: getResume
+      tags: [Resume]
+      summary: Get the whole resume in one call
+      description: >-
+        Assembles the profile plus all six collections in a single query.
+        `format=markdown` returns a rendered Markdown resume instead of JSON.
+      parameters:
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [json, markdown]
+            default: json
+      responses:
+        "200":
+          description: The assembled resume.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+            text/markdown:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        A Clerk session token issued against the `resume-api` JWT template
+        (audience `https://api.peteshepley.com`). Verified by API Gateway's
+        JWT authorizer before the request ever reaches the Lambda.
+
+  parameters:
+    ItemId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The entry's `id` (uuid4), as returned by list/create.
+
+  responses:
+    BadRequest:
+      description: Request body failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing, invalid, or expired bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: No entry exists for the caller with that id (or no profile yet).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+
+    EmploymentType:
+      type: string
+      enum: [full-time, part-time, contract, internship, self-employed]
+    SkillCategory:
+      type: string
+      enum: [language, framework, tool, soft-skill]
+    Proficiency:
+      type: string
+      enum: [beginner, intermediate, advanced, expert]
+    CertificationType:
+      type: string
+      enum: [professional, personal]
+    GoalCategory:
+      type: string
+      enum: [career, personal, learning]
+    GoalStatus:
+      type: string
+      enum: [active, achieved, abandoned]
+
+    ItemMeta:
+      type: object
+      description: Fields DynamoDB-backed collection items carry in addition to their own data.
+      properties:
+        id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+        pk:
+          type: string
+          description: Internal DynamoDB partition key (`USER#<clerk_user_id>`). Not needed by clients.
+        sk:
+          type: string
+          description: Internal DynamoDB sort key (`<ENTITY_TYPE>#<id>`). Not needed by clients.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProfileMeta:
+      type: object
+      properties:
+        entity_type:
+          type: string
+        pk:
+          type: string
+          description: Internal DynamoDB partition key (`USER#<clerk_user_id>`). Not needed by clients.
+        sk:
+          type: string
+          description: Internal DynamoDB sort key (always `PROFILE`). Not needed by clients.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProfileInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        headline:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        links:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'e.g. `{"linkedin": "...", "github": "...", "site": "..."}`'
+        goals_summary:
+          type: string
+          nullable: true
+    Profile:
+      allOf:
+        - $ref: "#/components/schemas/ProfileInput"
+        - $ref: "#/components/schemas/ProfileMeta"
+
+    ExperienceInput:
+      type: object
+      required: [organization, title, start_date]
+      properties:
+        organization:
+          type: string
+        title:
+          type: string
+        location:
+          type: string
+          nullable: true
+        employment_type:
+          $ref: "#/components/schemas/EmploymentType"
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Omit/null for the current role.
+        responsibilities:
+          type: array
+          items:
+            type: string
+        accomplishments:
+          type: array
+          items:
+            type: string
+    Experience:
+      allOf:
+        - $ref: "#/components/schemas/ExperienceInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    EducationInput:
+      type: object
+      required: [institution, degree, start_date]
+      properties:
+        institution:
+          type: string
+        degree:
+          type: string
+        field_of_study:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        gpa:
+          type: string
+          nullable: true
+        honors:
+          type: string
+          nullable: true
+        activities:
+          type: string
+          nullable: true
+    Education:
+      allOf:
+        - $ref: "#/components/schemas/EducationInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    SkillInput:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+        category:
+          $ref: "#/components/schemas/SkillCategory"
+        proficiency:
+          $ref: "#/components/schemas/Proficiency"
+        years_experience:
+          type: number
+          nullable: true
+    Skill:
+      allOf:
+        - $ref: "#/components/schemas/SkillInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    CertificationInput:
+      type: object
+      required: [name, issuing_organization, issue_date]
+      properties:
+        name:
+          type: string
+        issuing_organization:
+          type: string
+        issue_date:
+          type: string
+          format: date
+        expiration_date:
+          type: string
+          format: date
+          nullable: true
+        credential_id:
+          type: string
+          nullable: true
+        credential_url:
+          type: string
+          nullable: true
+        type:
+          $ref: "#/components/schemas/CertificationType"
+          default: professional
+    Certification:
+      allOf:
+        - $ref: "#/components/schemas/CertificationInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    HobbyInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+    Hobby:
+      allOf:
+        - $ref: "#/components/schemas/HobbyInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    GoalInput:
+      type: object
+      required: [description, category]
+      properties:
+        description:
+          type: string
+        category:
+          $ref: "#/components/schemas/GoalCategory"
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: "#/components/schemas/GoalStatus"
+          default: active
+    Goal:
+      allOf:
+        - $ref: "#/components/schemas/GoalInput"
+        - $ref: "#/components/schemas/ItemMeta"
+
+    Resume:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/Profile"
+        experience:
+          type: array
+          items:
+            $ref: "#/components/schemas/Experience"
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/Education"
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/Skill"
+        certifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Certification"
+        hobbies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hobby"
+        goals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Goal"

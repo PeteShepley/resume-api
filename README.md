@@ -31,12 +31,12 @@ tests/              pytest + moto (mocked DynamoDB), one module per router group
 
 ## Commands
 
-| Command | Action |
-|:---|:---|
-| `python -m venv .venv && source .venv/bin/activate` | Create/activate a virtualenv |
-| `pip install -r requirements-dev.txt` | Install runtime + dev dependencies |
-| `pytest` | Run the test suite |
-| `ruff check .` | Lint |
+| Command                                             | Action                             |
+|:----------------------------------------------------|:-----------------------------------|
+| `python -m venv .venv && source .venv/bin/activate` | Create/activate a virtualenv       |
+| `pip install -r requirements-dev.txt`               | Install runtime + dev dependencies |
+| `pytest`                                            | Run the test suite                 |
+| `ruff check .`                                      | Lint                               |
 
 ## Endpoints
 
@@ -63,10 +63,10 @@ Required repo configuration (see
 `operations/docs/runbooks/resume-api-deployment.md` for how to get these
 values, and for the Clerk application setup this API depends on):
 
-| Name | Kind | Value |
-|:---|:---|:---|
-| `AWS_ROLE_ARN` | Actions secret | `tofu output github_deploy_role_arn` in `operations/infra/apis/resume-api` |
-| `LAMBDA_FUNCTION_NAME` | Actions variable | `tofu output lambda_function_name` in `operations/infra/apis/resume-api` |
+| Name                   | Kind             | Value                                                                      |
+|:-----------------------|:-----------------|:---------------------------------------------------------------------------|
+| `AWS_ROLE_ARN`         | Actions secret   | `tofu output github_deploy_role_arn` in `operations/infra/apis/resume-api` |
+| `LAMBDA_FUNCTION_NAME` | Actions variable | `tofu output lambda_function_name` in `operations/infra/apis/resume-api`   |
 
 Until a Clerk application exists and `clerk_issuer_url`/`clerk_audience` are
 set in that Terraform stack, the API has no route at all (every request
