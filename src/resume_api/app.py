@@ -1,15 +1,27 @@
-"""Lambda entrypoint — mounts every router under /me and resolves requests.
+"""Lambda entrypoint -- mounts every router under /me and resolves requests.
 
-The gateway's JWT authorizer (see infra/apis/resume-api/apigateway.tf in the
-operations repo) already verified the caller before this ever runs; internal
-routing among the 30+ /me/... paths happens here, not at the gateway.
+Every request's identity is verified in-app (see auth.py/clerk.py) from
+the Authorization header directly; nothing here trusts an upstream proxy
+or authorizer to have already done it, so behavior is identical whether
+this runs behind API Gateway or standalone via local_server.py.
 """
 
+import os
+
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
+from aws_lambda_powertools.event_handler.api_gateway import CORSConfig
 
 from resume_api.routers import certifications, education, experience, goals, hobbies, profile, resume, skills
 
-app = APIGatewayHttpResolver()
+# CORS is only ever enabled for local dev (see local_server.py, which sets
+# LOCAL_DEV) -- production's response headers are unaffected.
+_cors = (
+    CORSConfig(allow_origin=os.environ.get("CORS_ALLOW_ORIGIN", "*"))
+    if os.environ.get("LOCAL_DEV")
+    else None
+)
+
+app = APIGatewayHttpResolver(cors=_cors)
 
 app.include_router(profile.router, prefix="/me/profile")
 app.include_router(experience.router, prefix="/me/experience")

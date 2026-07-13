@@ -1,8 +1,7 @@
 """Aggregate resume endpoint: GET /me/resume?format=json|markdown.
 
 The only query this API ever needs to assemble a full resume: one Query by
-pk, grouped by entity_type in Python. See
-docs/projects/resume-api/design.md (operations repo) for the schema.
+pk (see db.py for the pk/sk schema), grouped by entity_type in Python.
 """
 
 from aws_lambda_powertools.event_handler import Response

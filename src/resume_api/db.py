@@ -1,7 +1,10 @@
 """DynamoDB table handle and pk/sk key-building helpers.
 
-See docs/projects/resume-api/design.md in the operations repo for the
-single-table schema this implements.
+Single-table schema: every item is keyed by `pk=USER#<clerk_user_id>` and
+an `sk` that distinguishes what it is -- `PROFILE` for the profile
+singleton, `<ENTITY_TYPE>#<uuid>` (e.g. `EXPERIENCE#<uuid>`) for each item
+in the six owned collections (see models.py for entity types, crud.py for
+how collection items are built).
 """
 
 from __future__ import annotations

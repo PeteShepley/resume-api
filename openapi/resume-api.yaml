@@ -27,6 +27,8 @@ servers:
     description: Production
   - url: https://cb1nkp4qvk.execute-api.us-east-1.amazonaws.com
     description: Production (default API Gateway invoke URL, no custom domain)
+  - url: http://localhost:8000
+    description: Local development (see README "Running locally")
 
 security:
   - clerkAuth: []

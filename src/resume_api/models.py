@@ -1,6 +1,6 @@
-"""Pydantic models for every resume entity — see
-docs/projects/resume-api/design.md (operations repo) for the domain model.
-"""
+"""Pydantic models for every resume entity: the profile singleton plus the
+six owned collections (experience, education, skills, certifications,
+hobbies, goals)."""
 
 from datetime import date
 from enum import Enum
