@@ -95,18 +95,18 @@ Deploys via GitHub Actions on every push to `main` (`.github/workflows/deploy.ym
 build a zip with `requirements.txt` installed alongside `src/resume_api/`,
 then `aws lambda update-function-code`. Authentication is via GitHub OIDC (no
 stored AWS credentials) — the function, table, and API Gateway are
-provisioned in `operations/infra/apis/resume-api`. Pull requests run
-`.github/workflows/ci.yml` (`ruff check` + `pytest`) without touching any
-deployment credentials.
+provisioned in [`infrastructure/`](infrastructure/), this repo's own
+OpenTofu stack. Pull requests run `.github/workflows/ci.yml` (`ruff check` +
+`pytest`) without touching any deployment credentials.
 
 Required repo configuration (see
 `operations/docs/runbooks/resume-api-deployment.md` for how to get these
 values, and for the Clerk application setup this API depends on):
 
-| Name                   | Kind             | Value                                                                      |
-|:-----------------------|:-----------------|:---------------------------------------------------------------------------|
-| `AWS_ROLE_ARN`         | Actions secret   | `tofu output github_deploy_role_arn` in `operations/infra/apis/resume-api` |
-| `LAMBDA_FUNCTION_NAME` | Actions variable | `tofu output lambda_function_name` in `operations/infra/apis/resume-api`   |
+| Name                   | Kind             | Value                                                     |
+|:-----------------------|:-----------------|:--------------------------------------------------------------|
+| `AWS_ROLE_ARN`         | Actions secret   | `tofu output github_deploy_role_arn` in `infrastructure/`     |
+| `LAMBDA_FUNCTION_NAME` | Actions variable | `tofu output lambda_function_name` in `infrastructure/`       |
 
 The app verifies every caller's token itself (see "Structure" above) using
 the `CLERK_ISSUER_URL`/`CLERK_AUDIENCE` Lambda environment variables. Until

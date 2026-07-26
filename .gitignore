@@ -8,3 +8,4 @@ package/
 function.zip
 response.json
 .env.local
+.terraform/
