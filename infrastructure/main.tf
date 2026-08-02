@@ -28,3 +28,14 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+# The consolidated per-repo GitHub OIDC deploy role (gha-deploy-resume-api),
+# created in operations/infra/002-github-projects. iam.tf attaches a policy
+# to it.
+data "aws_ssm_parameter" "deploy_role_name" {
+  name = "/github-deploy/resume-api/role-name"
+}
+
+data "aws_ssm_parameter" "deploy_role_arn" {
+  name = "/github-deploy/resume-api/role-arn"
+}

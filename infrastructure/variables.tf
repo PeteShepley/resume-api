@@ -30,12 +30,6 @@ variable "github_owner" {
   default     = "PeteShepley"
 }
 
-variable "github_repo" {
-  description = "GitHub repository allowed to assume the deploy role (format: owner/repo)"
-  type        = string
-  default     = "PeteShepley/resume-api"
-}
-
 variable "cors_allowed_origins" {
   description = "Browser origins allowed to call this API cross-origin (API Gateway's native CORS support)"
   type        = list(string)

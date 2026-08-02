@@ -40,5 +40,6 @@ output "custom_domain_hosted_zone_id" {
 
 output "github_deploy_role_arn" {
   description = "ARN for the GitHub Actions deploy role — set as AWS_ROLE_ARN in the repo's Actions secrets"
-  value       = aws_iam_role.github_deploy.arn
+  sensitive   = true
+  value       = data.aws_ssm_parameter.deploy_role_arn.value
 }
