@@ -23,7 +23,7 @@ from urllib.parse import parse_qsl, urlsplit
 # time to decide whether to turn CORS on.
 os.environ.setdefault("LOCAL_DEV", "1")
 
-from resume_api.app import handler  # noqa: E402
+from resume_api.app import handler
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -85,7 +85,7 @@ class _Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self) -> None:
         self._handle("OPTIONS")
 
-    def log_message(self, format: str, *args) -> None:  # noqa: A002
+    def log_message(self, format: str, *args) -> None:
         print(f"{self.address_string()} - {format % args}")
 
 

@@ -11,7 +11,16 @@ import os
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler.api_gateway import CORSConfig
 
-from resume_api.routers import certifications, education, experience, goals, hobbies, profile, resume, skills
+from resume_api.routers import (
+    certifications,
+    education,
+    experience,
+    goals,
+    hobbies,
+    profile,
+    resume,
+    skills,
+)
 
 # CORS is only ever enabled for local dev (see local_server.py, which sets
 # LOCAL_DEV) -- production's response headers are unaffected.
