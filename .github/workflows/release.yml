@@ -1,0 +1,52 @@
+name: Release
+
+# Test, bundle the Lambda zip, publish it as a GitHub Release. Deployment
+# happens separately, from the operations repo:
+# `scripts/deploy api resume <env> <tag>`.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency: release-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Test
+        run: |
+          pip install -r requirements-dev.txt
+          ruff check .
+          pytest
+
+      - name: Build function.zip
+        run: |
+          pip install -r requirements.txt -t package/
+          cp -r src/resume_api package/
+          (cd package && zip -qr ../function.zip . -x '*.dist-info/*' '*/__pycache__/*')
+
+      - name: Manifest
+        run: |
+          jq -n --arg sha "$GITHUB_SHA" \
+            '{type:"lambda", runtime:"python3.13", handler:"resume_api.app.handler", commit:$sha}' \
+            > manifest.json
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v0.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" function.zip manifest.json \
+            --title "$TAG" \
+            --notes "Build of ${GITHUB_SHA:0:7} for api.peteshepley.com/resume/v1"
