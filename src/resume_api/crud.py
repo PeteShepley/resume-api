@@ -10,7 +10,7 @@ The profile singleton and the resume aggregate are hand-written instead
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from aws_lambda_powertools.event_handler import Response
@@ -24,7 +24,7 @@ from resume_api.db import clean_decimals, entity_sk, get_table, user_pk
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _to_dynamo_item(model: BaseModel) -> dict:

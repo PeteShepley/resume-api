@@ -5,7 +5,7 @@ person (no id, no list, no delete), a different shape than the six owned
 collections.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler.exceptions import BadRequestError, NotFoundError
@@ -19,7 +19,7 @@ router = Router()
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 @router.get("/")
