@@ -1,4 +1,4 @@
-"""Render an assembled resume dict (profile + six collections) as Markdown."""
+"""Render an assembled resume dict (profile and six collections) as Markdown."""
 
 
 def render_markdown(resume: dict) -> str:

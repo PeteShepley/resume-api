@@ -91,22 +91,23 @@ full endpoint/schema reference; summary:
 
 ## Deployment
 
-Deploys via GitHub Actions on every push to `main` (`.github/workflows/deploy.yml`):
-build a zip with `requirements.txt` installed alongside `src/resume_api/`,
-then `aws lambda update-function-code`. Authentication is via GitHub OIDC (no
-stored AWS credentials) — the function, table, and API Gateway are
-provisioned in [`infrastructure/`](infrastructure/), this repo's own
-OpenTofu stack. Pull requests run `.github/workflows/ci.yml` (`ruff check` +
-`pytest`) without touching any deployment credentials.
+Every push to `main` runs `.github/workflows/release.yml`. It tests the code,
+builds `function.zip` with `requirements.txt` installed next to
+`src/resume_api/`, and publishes the zip plus `manifest.json` as a GitHub
+Release tagged `v0.<run>`. Pull requests run `.github/workflows/ci.yml`
+(`ruff check` + `pytest`).
 
-Required repo configuration (see
-`operations/docs/runbooks/resume-api-deployment.md` for how to get these
-values, and for the Clerk application setup this API depends on):
+This repo holds no infrastructure and does not deploy itself. The Lambda,
+DynamoDB table, HTTP API and JWT authorizer live in the `operations` repo
+(stack `210-api-resume`), and a release is deployed from there:
 
-| Name                   | Kind             | Value                                                     |
-|:-----------------------|:-----------------|:--------------------------------------------------------------|
-| `AWS_ROLE_ARN`         | Actions secret   | `tofu output github_deploy_role_arn` in `infrastructure/`     |
-| `LAMBDA_FUNCTION_NAME` | Actions variable | `tofu output lambda_function_name` in `infrastructure/`       |
+```sh
+scripts/deploy api resume stage v0.<run>
+scripts/deploy api resume prod  v0.<run>
+```
+
+The API is served at `https://api.peteshepley.com/resume/v1`, or
+`https://api.stage.peteshepley.com/resume/v1` on staging.
 
 The app verifies every caller's token itself (see "Structure" above) using
 the `CLERK_ISSUER_URL`/`CLERK_AUDIENCE` Lambda environment variables. Until
